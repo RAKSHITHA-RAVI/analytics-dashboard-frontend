@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import Papa from "papaparse";
+import Papa, { ParseResult, ParseError } from "papaparse";
 
 type Props = {
   onDataLoaded: (rows: any[]) => void;
@@ -29,19 +29,20 @@ export default function UploadCSV({ onDataLoaded }: Props) {
       header: true,
       dynamicTyping: true,
       skipEmptyLines: true,
-      // helps with many real-world CSV exports
-      transformHeader: (h) => (h ?? "").trim(),
-      complete: (results) => {
+      transformHeader: (h: string | undefined) => (h ?? "").trim(),
+
+      complete: (results: ParseResult<any>) => {
         try {
           const data = (results.data as any[]) || [];
 
-          // ✅ Parse-level errors from Papa
+          // Papa-level parsing errors
           const papaErrors = results.errors || [];
           if (papaErrors.length) {
-            // show only first error to keep UI clean
             const first = papaErrors[0];
             setError(
-              `CSV parse issue at row ${first.row ?? "?"}: ${first.message || "Unknown error"}`
+              `CSV parse issue at row ${first.row ?? "?"}: ${
+                first.message || "Unknown error"
+              }`
             );
             onDataLoaded([]);
             return;
@@ -56,10 +57,14 @@ export default function UploadCSV({ onDataLoaded }: Props) {
           }
 
           // Determine columns from first non-empty row
-          const firstRow = data.find((r) => r && Object.keys(r).length > 0) || {};
-          let cols = Object.keys(firstRow).map((c) => (c ?? "").trim());
+          const firstRow =
+            data.find((r) => r && Object.keys(r).length > 0) || {};
 
-          // Remove empty header keys
+          let cols = Object.keys(firstRow).map((c) =>
+            (c ?? "").trim()
+          );
+
+          // Remove empty headers
           cols = cols.filter((c) => c.length > 0);
 
           if (!cols.length) {
@@ -70,7 +75,7 @@ export default function UploadCSV({ onDataLoaded }: Props) {
             return;
           }
 
-          // Filter out totally empty rows
+          // Remove fully empty rows
           const cleaned = data.filter((r) => {
             if (!r || typeof r !== "object") return false;
             return Object.keys(r).some((k) => {
@@ -98,7 +103,7 @@ export default function UploadCSV({ onDataLoaded }: Props) {
         }
       },
 
-      error: (err) => {
+      error: (err: ParseError) => {
         setLoading(false);
         setError(err?.message || "CSV parsing failed.");
         onDataLoaded([]);
@@ -146,14 +151,12 @@ export default function UploadCSV({ onDataLoaded }: Props) {
         </div>
       </div>
 
-      {/* Loading */}
       {loading && (
         <div className="rounded-xl border px-3 py-2 text-sm shadow-sm bg-blue-50 border-blue-100 text-blue-700 dark:bg-blue-950/40 dark:border-blue-900/40 dark:text-blue-200">
           Parsing CSV… please wait.
         </div>
       )}
 
-      {/* Error */}
       {!loading && error && (
         <div className="rounded-xl border px-3 py-2 text-sm shadow-sm border-red-200 bg-red-50 text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200">
           <div className="font-semibold">Upload failed</div>
@@ -171,7 +174,6 @@ export default function UploadCSV({ onDataLoaded }: Props) {
         </div>
       )}
 
-      {/* Success */}
       {!loading && success && (
         <div className="rounded-xl border px-3 py-2 text-sm shadow-sm border-green-200 bg-green-50 text-green-700 dark:border-green-900/50 dark:bg-green-950/40 dark:text-green-200">
           <div className="font-semibold">Upload successful</div>
