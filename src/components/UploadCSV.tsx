@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
-import Papa, { ParseResult, ParseError } from "papaparse";
+import Papa from "papaparse";
+import type { ParseResult, ParseError } from "papaparse";
 
 type Props = {
   onDataLoaded: (rows: any[]) => void;
