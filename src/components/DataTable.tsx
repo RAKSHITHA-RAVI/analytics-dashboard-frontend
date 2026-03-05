@@ -5,11 +5,11 @@ type Props = {
   rows: any[];
   wrap?: boolean;
   freezeFirst?: boolean;
-  hiddenColumns?: string[];
+  hiddenColumns?: any;
 };
 type SortDir = "asc" | "desc";
 
-export default function DataTable({rows, wrap, freezeFirst,hiddenColumns,}: Props) {
+export default function DataTable({ rows, wrap, freezeFirst, hiddenColumns }: Props) {
   // ✅ Guard: avoid crash when rows is empty
   if (!rows || rows.length === 0) {
     return (

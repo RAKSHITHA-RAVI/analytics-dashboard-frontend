@@ -1,15 +1,16 @@
 import Papa from "papaparse";
 
-export const parseCsv = (file: File): Promise<any[]> => {
+export function parseCsv(text: string): Promise<any[]> {
   return new Promise((resolve, reject) => {
-    Papa.parse(file, {
+    Papa.parse(text, {
       header: true,
       dynamicTyping: true,
       skipEmptyLines: true,
-      complete: (results) => {
-        resolve(results.data as any[]);
+      complete: (results: any) => {
+        const data = (results?.data as any[]) || [];
+        resolve(data);
       },
-      error: reject,
+      error: (err: any) => reject(err),
     });
   });
-};
+}
