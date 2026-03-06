@@ -9,7 +9,12 @@ type Props = {
 };
 type SortDir = "asc" | "desc";
 
-export default function DataTable({ rows, wrap, freezeFirst, hiddenColumns }: Props) {
+export default function DataTable({
+  rows,
+  wrap,
+  freezeFirst,
+  hiddenColumns,
+}: Props) {
   // ✅ Guard: avoid crash when rows is empty
   if (!rows || rows.length === 0) {
     return (
@@ -24,6 +29,12 @@ export default function DataTable({ rows, wrap, freezeFirst, hiddenColumns }: Pr
       </div>
     );
   }
+
+  // Mark unused props as used to satisfy TypeScript's noUnusedLocals rule.
+  // These props are accepted so the parent can pass them; this no-op avoids build errors.
+  void wrap;
+  void freezeFirst;
+  void hiddenColumns;
 
   const types = inferColumnTypes(rows);
   const columns = Object.keys(rows[0]);
